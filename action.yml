@@ -35,6 +35,7 @@ runs:
   using: "composite"
   steps:
     - name: Add expected files path
+      shell: bash
       run: |
         EXPECTED_FILES="${{ inputs.expected_files }}"
         # Update this list with the desired file paths
@@ -48,6 +49,7 @@ runs:
         fetch-depth: 0  # Ensures full commit history is fetched
 
     - name: Check repository visibility
+      shell: bash
       run: |
         if [ "${{ inputs.repository_private }}" = "true" ]; then
           echo "This is a private repository."
@@ -59,6 +61,7 @@ runs:
     # Step 2: Get GitHub username and email
     - name: Get GitHub User Info
       id: user-info
+      shell: bash
       run: |
         # Fetch user info from the GitHub API
         curl -s -H "Authorization: Bearer ${{ inputs.github_token }}" \
@@ -90,6 +93,7 @@ runs:
 
     - name: Get Modified Files
       id: modified_files
+      shell: bash
       run: |
 
         # Print the current GitHub commit
@@ -112,6 +116,7 @@ runs:
 
     - name: Filter Modified Files to obtain files to be processed
       id: filter_modified_files
+      shell: bash
       run: |
         # Define the paths specified in `push: paths`
         EXPECTED_FILES=${{ env.EXPECTED_FILES }}
@@ -153,12 +158,14 @@ runs:
 
     # New Step: Install ProductMap CLI
     - name: Install Python Package
+      shell: bash
       run: |
         echo "Installing ProductMap CLI"
         pip install productmap-cli
 
 
     - name: Process Each Modified File
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         ALL_RESPONSES=""
@@ -217,6 +224,7 @@ runs:
         echo "PUBLIC_URLS=${PUBLIC_URLS[@]}" >> $GITHUB_ENV
 
     - name: Ensure README.md exists
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         # Check if README.md exists, if not, create it with a title
@@ -225,6 +233,7 @@ runs:
         fi
 
     - name: Append JSON Responses
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         echo "Appending responses to README.md"
@@ -267,12 +276,14 @@ runs:
         echo "Updated README.md content:"
 
     - name: Run script to modify README.md
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         echo "Adding timestamp to README.md"
         echo "\n\nLast updated on $(date)" >> README.md
 
     - name: Set up Git
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         git config --global user.name "GitHub Actions"
@@ -280,27 +291,32 @@ runs:
 
 
     - name: Create a new branch
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         git checkout -b ${{ inputs.branch_name }}  # Use the dynamically generated branch name
 
     - name: Make changes (e.g., create a file)
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         echo "This is a new file created in the new branch" > newfile.txt
         git add README.md
 
     - name: Commit changes
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         git commit -m "Add new file to new branch" || echo "No changes to commit"
 
     - name: Push the new branch and commit
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         git push --set-upstream origin ${{ inputs.branch_name }}  # Push to the newly created branch and set upstream
 
     - name: Create a pull request
+      shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         # Create the PR using the GitHub API
