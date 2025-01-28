@@ -4,7 +4,6 @@ description: |
   to generate product maps using the ProductMap API. It supports monitoring file
   changes, validating them, and sending requests to the API for map generation.
 
-author: Axel Reichwein <axel.reichwein@koneksys.com>
 branding:
   icon: "share-2"
   color: "blue"
