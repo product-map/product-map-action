@@ -1,9 +1,12 @@
 name: ProductMap Map Generation
 description: |
-  This GitHub Action automates the validation and processing of specific files
-  to generate product maps using the ProductMap API. It supports monitoring file
-  changes, validating them, and sending requests to the API for map generation.
-  
+  This GitHub Action automates file validation and processing for generating product maps using the ProductMap API. 
+  It monitors changes, validates files, and sends requests to the API.
+
+branding:
+  icon: "share-2"
+  color: "blue"
+
 permissions:
   contents: write
   pull-requests: write
