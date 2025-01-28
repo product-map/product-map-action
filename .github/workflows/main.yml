@@ -1,4 +1,13 @@
-name: Trigger ProductMap map generation
+name: ProductMap Map Generation
+description: |
+  This GitHub Action automates the validation and processing of specific files
+  to generate product maps using the ProductMap API. It supports monitoring file
+  changes, validating them, and sending requests to the API for map generation.
+
+author: axel.reichwein@koneksys.com
+branding:
+  icon: "share-2"
+  color: "blue"
 
 permissions:
   contents: write
