@@ -148,6 +148,9 @@ jobs:
 
       - name: Process Each Modified File
         if: env.MATCHING_FILES_STRING != ''
+        env:
+          PRODUCT_MAP_DOMAIN_URL: ${{ secrets.PRODUCT_MAP_DOMAIN_URL }}
+          PRODUCT_MAP_TOKEN: ${{ secrets.PRODUCT_MAP_TOKEN }}
         run: |
           ALL_RESPONSES=""
           for file in $(echo "$MATCHING_FILES_STRING" | tr ',' '\n'); do
