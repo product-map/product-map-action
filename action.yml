@@ -14,7 +14,6 @@ inputs:
     description: 'User email'
     required: false
 
-
 permissions:
   contents: write
   pull-requests: write
@@ -30,7 +29,6 @@ runs:
         echo "EXPECTED_FILES=${EXPECTED_FILES}" >> $GITHUB_ENV
         echo "File paths to be analyzed: ${EXPECTED_FILES}"
 
-    # Step 1: Checkout the repository
     - name: Checkout Repository
       uses: actions/checkout@v3
       with:
@@ -40,13 +38,12 @@ runs:
       shell: bash
       run: |
         if [ "${{ github.event.repository.private }}" = "true" ]; then
-          echo "This is a private repository."
+          echo "This is a private repository. The extension only works for public repositories."
           exit 1
         else
           echo "This is a public repository."
         fi
 
-    # Step 2: Get GitHub username and email
     - name: Get GitHub User Info
       id: user-info
       shell: bash
@@ -144,15 +141,14 @@ runs:
         echo "MATCHING_FILES_STRING=$MATCHING_FILES_STRING" >> $GITHUB_ENV
         echo "$MATCHING_FILES_STRING" > output_files.txt
 
-    # New Step: Install ProductMap CLI
-    - name: Install Python Package
+    - name: Install ProductMap CLI
       shell: bash
       run: |
         echo "Installing ProductMap CLI"
         pip install productmap-cli
 
 
-    - name: Process Each Modified File
+    - name: Generate map for each file
       shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
@@ -220,7 +216,7 @@ runs:
           echo "# Project Documentation" > README.md
         fi
 
-    - name: Append JSON Responses
+    - name: Append URL responses
       shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
@@ -293,7 +289,7 @@ runs:
       run: |
         git checkout -b ${{ env.BRANCH_NAME }}  # Use the dynamically generated branch name
 
-    - name: Make changes (e.g., create a file)
+    - name: Make changes to the repository
       shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
