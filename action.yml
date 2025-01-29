@@ -289,12 +289,20 @@ runs:
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
 
+    - name: Generate dynamic branch name
+      if: env.MATCHING_FILES_STRING != ''
+      id: generate_branch_name
+      run: |
+        # Generate branch name based on timestamp
+        BRANCH_NAME="pm-$(date +'%Y%m%d%H%M%S')"  # Format: pm-YYYYMMDDHHMMSS
+        echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+        echo "Generated branch name: ${BRANCH_NAME}"
 
     - name: Create a new branch
       shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
-        git checkout -b ${{ inputs.branch_name }}  # Use the dynamically generated branch name
+        git checkout -b ${{ env.BRANCH_NAME }}  # Use the dynamically generated branch name
 
     - name: Make changes (e.g., create a file)
       shell: bash
@@ -307,13 +315,13 @@ runs:
       shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
-        git commit -m "Add new file to new branch" || echo "No changes to commit"
+        git commit -m "ProductMap analysis result" || echo "No changes to commit"
 
     - name: Push the new branch and commit
       shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
-        git push --set-upstream origin ${{ inputs.branch_name }}  # Push to the newly created branch and set upstream
+        git push --set-upstream origin ${{ env.BRANCH_NAME }}  # Push to the newly created branch and set upstream
 
     - name: Create a pull request
       shell: bash
@@ -326,7 +334,7 @@ runs:
           https://api.github.com/repos/${{ github.repository }}/pulls \
           -d '{
                 "title": "Auto-generated PR for branch '${{ inputs.branch_name }}'",
-                "head": "'${{ inputs.branch_name }}'",
+                "head": "'${{ env.BRANCH_NAME }}'",
                 "base": "main",
                 "body": "This pull request was created automatically by GitHub Actions to merge the changes from '${{ inputs.branch_name }}' into the main branch."
               }'
