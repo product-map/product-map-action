@@ -7,21 +7,9 @@ branding:
   color: "blue"
 
 inputs:
-  repository_private:
-    description: 'Whether the repository is private'
-    required: true
-  sha:
-    description: 'GitHub SHA'
-    required: true
-  github_token:
-    description: 'GitHub Token'
-    required: true
-  branch_name:
-    description: 'Branch name'
-    required: true
   expected_files:
     description: 'Expected files'
-    required: false
+    required: true
   user_email:
     description: 'User email'
     required: false
@@ -34,7 +22,7 @@ permissions:
 runs:
   using: "composite"
   steps:
-    - name: Add expected files path
+    - name: Collect expected file paths
       shell: bash
       run: |
         EXPECTED_FILES="${{ inputs.expected_files }}"
@@ -51,7 +39,7 @@ runs:
     - name: Check repository visibility
       shell: bash
       run: |
-        if [ "${{ inputs.repository_private }}" = "true" ]; then
+        if [ "${{ github.event.repository.private }}" = "true" ]; then
           echo "This is a private repository."
           exit 1
         else
@@ -64,7 +52,7 @@ runs:
       shell: bash
       run: |
         # Fetch user info from the GitHub API
-        curl -s -H "Authorization: Bearer ${{ inputs.github_token }}" \
+        curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/users/${GITHUB_ACTOR} > user.json
 
         # Extract username and email from API response
@@ -97,14 +85,14 @@ runs:
       run: |
 
         # Print the current GitHub commit
-        echo "Github current commit: ${{ inputs.sha }}"
+        echo "Github current commit: ${{ github.sha }}"
     
         # Get the immediate previous commit, regardless of branch
         PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
         echo "Previous commit: $PREVIOUS_COMMIT"
       
         # Get the list of modified files from the GitHub event
-        git diff --name-only $PREVIOUS_COMMIT ${{ inputs.sha }} > changed_files.txt
+        git diff --name-only $PREVIOUS_COMMIT ${{ github.sha }} > changed_files.txt
         echo "Modified files:"
         cat changed_files.txt
 
@@ -330,7 +318,7 @@ runs:
       run: |
         # Create the PR using the GitHub API
         curl -X POST \
-          -H "Authorization: token ${{ inputs.github_token }}" \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${{ github.repository }}/pulls \
           -d '{
