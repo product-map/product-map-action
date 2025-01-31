@@ -11,7 +11,7 @@ inputs:
     description: 'GitHub Token'
     required: true
   expected_files:
-    description: 'Expected files'
+    description: 'Expected files (comma-separated list in parenthesis)'
     required: true
   user_email:
     description: 'User email'
@@ -219,48 +219,65 @@ runs:
           echo "# Project Documentation" > README.md
         fi
 
-    - name: Append URL responses
+    - name: Append URL responses in table format with ProductMap Icon
       shell: bash
       if: env.MATCHING_FILES_STRING != ''
       run: |
         echo "Appending responses to README.md"
-        
-        # Check if the header "## ProductMap file results" exists, and append if not present
-        if ! grep -q "## ProductMap file results" README.md; then
-            echo -e "\n# ProductMap file results\n" > README.md
-        fi
-        
-        # Process "File URLs" header and replace URLs if they exist
-        if grep -q "### File URLs" README.md; then
-            echo "Found '### File URLs' header, replacing URLs below it."
-            # Remove all URLs between "### File URLs" and the next section (if any)
-            sed -i '/### File URLs/,/### /{//!d;}' README.md
-        else
-            echo -e "\n### File URLs:\n" >> README.md
-        fi
-        # Append new URLs
-        for url in "${URLS[@]}"; do
-            echo "$url" >> README.md
+
+        # Define constants
+        PRODUCT_MAP_LOGO_URL="https://product-map.ai/product_map_logo.png"
+        PRODUCT_MAP_HOME_URL="https://product-map.ai"
+        CONTACT_US_URL="https://product-map.ai"
+
+        # Define ProductMap clickable logo
+        LOGO_MARKDOWN="\n\n<p align=\"center\"><a href=\"$PRODUCT_MAP_HOME_URL\" target=\"_blank\"><img src=\"$PRODUCT_MAP_LOGO_URL\" width=\"50%\"></a></p>\n"
+
+        # Define section markers
+        SECTION_TITLE="## ProductMap File Analysis Result"
+        SECTION_DESCRIPTION="This section contains an analysis of ProductMap files. Each file has a link to its source."
+        CONTACT_SECTION="\n## Contact Us\nFor any inquiries, feel free to [contact us]($CONTACT_US_URL)."
+
+        # Define table header
+        TABLE_HEADER="| Github File | ProductMap File URL |"
+        TABLE_SEPARATOR="|-------------|---------------------|"
+
+        # Start constructing the Markdown table
+        TABLE_CONTENT="$TABLE_HEADER\n$TABLE_SEPARATOR"
+
+        # Loop through matching files and append rows
+        for i in "${!FILE_NAMES[@]}"; do
+            FILE_NAME="${FILE_NAMES[$i]}"
+            FILE_URL="${FILE_URLS[$i]}"
+            TABLE_CONTENT="$TABLE_CONTENT\n| $FILE_NAME | [View File]($FILE_URL) |"
         done
-        
-        # Add a new line separator between the sections
-        echo -e "\n" >> README.md
-    
-        # Process "Public file URLs" header and replace URLs if they exist
-        if grep -q "### Public file URLs" README.md; then
-            echo "Found '### Public file URLs' header, replacing URLs below it."
-            # Remove all URLs between "### Public file URLs" and the next section (if any)
-            sed -i '/### Public file URLs/,/### /{//!d;}' README.md
-        else
-            echo -e "\n### Public file URLs:\n" >> README.md
+
+        # Check if README.md exists, if not create it
+        if [ ! -f README.md ]; then
+            echo "" > README.md
         fi
-        # Append new Public URLs
-        for public_url in "${PUBLIC_URLS[@]}"; do
-            echo "$public_url" >> README.md
-        done
-    
-        # Output updated README.md to verify the append
-        echo "Updated README.md content:"
+
+        # Read the current README content
+        README_CONTENT=$(cat README.md)
+
+        # Check if logo already exists to prevent duplicates
+        if ! grep -q "$PRODUCT_MAP_LOGO_URL" README.md; then
+            LOGO_INSERT="$LOGO_MARKDOWN"
+        else
+            LOGO_INSERT=""
+        fi
+
+        # Insert the table in the correct place
+        if grep -q "$SECTION_TITLE" README.md; then
+            # Update existing section
+            sed -i "/$SECTION_TITLE/,/## /{//!d;}" README.md
+            echo -e "$LOGO_INSERT$SECTION_TITLE\n\n$SECTION_DESCRIPTION\n\n$TABLE_CONTENT\n$CONTACT_SECTION" >> README.md
+        else
+            # Append new section
+            echo -e "\n\n$LOGO_INSERT$SECTION_TITLE\n\n$SECTION_DESCRIPTION\n\n$TABLE_CONTENT\n$CONTACT_SECTION" >> README.md
+        fi
+
+        echo "README updated successfully!"
 
     - name: Run script to modify README.md
       shell: bash
