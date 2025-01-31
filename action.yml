@@ -11,7 +11,7 @@ inputs:
     description: 'GitHub Token'
     required: true
   expected_files:
-    description: 'Expected files'
+    description: 'Expected files (comma-separated list in parenthesis)'
     required: true
   user_email:
     description: 'User email'
