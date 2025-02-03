@@ -157,10 +157,11 @@ runs:
       run: |
         ALL_RESPONSES=""
         REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
+        BRANCH_NAME="${GITHUB_REF_NAME}"
 
         for file in $(echo "$MATCHING_FILES_STRING" | tr ',' '\n'); do
           echo "Processing file: $file"
-          FILE_URL="${REPO_URL}/${file}"
+          FILE_URL="${REPO_URL}/blob/${BRANCH_NAME}/${file}"
           echo "Full file URL: $FILE_URL"
         
           # Step 2: Validate the file
