@@ -248,7 +248,7 @@ runs:
         # Define section markers
         SECTION_TITLE="## ProductMap File Analysis Result"
         SECTION_DESCRIPTION="This section contains an analysis of ProductMap files. Each file has a link to its source."
-        CONTACT_SECTION="\n## Contact Us\nFor any inquiries, feel free to [contact us]($CONTACT_US_URL)."
+        CONTACT_SECTION="\n## ProductMap - Contact Us\nFor any inquiries, feel free to [contact us]($CONTACT_US_URL)."
 
         # Define table header
         TABLE_HEADER="| Github File | ProductMap File URL |"
@@ -297,7 +297,7 @@ runs:
       if: env.MATCHING_FILES_STRING != ''
       run: |
         echo "Adding timestamp to README.md"
-        echo "\n\nLast updated on $(date)" >> README.md
+        echo "\n\n Last updated on $(date)" >> README.md
 
     - name: Set up Git
       shell: bash
