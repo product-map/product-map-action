@@ -156,12 +156,17 @@ runs:
       if: env.MATCHING_FILES_STRING != ''
       run: |
         ALL_RESPONSES=""
+        FILE_NAMES=()
+        FILE_REPO_URLS=()
+        PUBLIC_URLS=()
         REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
         BRANCH_NAME="${GITHUB_REF_NAME}"
 
         for file in $(echo "$MATCHING_FILES_STRING" | tr ',' '\n'); do
           echo "Processing file: $file"
           FILE_URL="${REPO_URL}/blob/${BRANCH_NAME}/${file}"
+          FILE_NAMES+=("$file")
+          FILE_REPO_URLS+=("$FILE_URL")
           echo "Full file URL: $FILE_URL"
         
           # Step 2: Validate the file
@@ -214,6 +219,8 @@ runs:
         echo "Exporting URLs and Public URLs for next steps:"
         echo "URLS=${URLS[@]}" >> $GITHUB_ENV
         echo "PUBLIC_URLS=${PUBLIC_URLS[@]}" >> $GITHUB_ENV
+        echo "FILE_NAMES=${FILE_NAMES[@]}" >> $GITHUB_ENV
+        echo "FILE_REPO_URLS=${FILE_REPO_URLS[@]}" >> $GITHUB_ENV
 
     - name: Ensure README.md exists
       shell: bash
@@ -253,8 +260,9 @@ runs:
         # Loop through matching files and append rows
         for i in "${!FILE_NAMES[@]}"; do
             FILE_NAME="${FILE_NAMES[$i]}"
-            FILE_URL="${FILE_URLS[$i]}"
-            TABLE_CONTENT="$TABLE_CONTENT\n| $FILE_NAME | [View File]($FILE_URL) |"
+            FILE_URL="${FILE_REPO_URLS[$i]}"
+            PUBLIC_URL="${PUBLIC_URLS[$i]}"
+            TABLE_CONTENT="$TABLE_CONTENT\n| [$FILE_NAME]($FILE_URL) | [View File]($PUBLIC_URL) |"
         done
 
         # Check if README.md exists, if not create it
