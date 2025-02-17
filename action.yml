@@ -159,8 +159,18 @@ runs:
         FILE_NAMES=()
         FILE_REPO_URLS=()
         PUBLIC_URLS=()
-        REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
-        BRANCH_NAME="${GITHUB_REF_NAME}"
+
+        # Detect if the repository is a fork
+        if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+          REPO_URL="https://github.com/${GITHUB_HEAD_REPO}"
+          BRANCH_NAME="${GITHUB_HEAD_REF}"
+        else
+          REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+        fi
+
+        echo "Using repository: $REPO_URL"
+        echo "Using branch: $BRANCH_NAME"
 
         for file in $(echo "$MATCHING_FILES_STRING" | tr ',' '\n'); do
           echo "Processing file: $file"
