@@ -160,17 +160,17 @@ runs:
         FILE_REPO_URLS=()
         PUBLIC_URLS=()
 
-        # Detect if the repository is a fork
+        # Detect if the repository is a fork and process files accordingly
         if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-          REPO_URL="https://github.com/${GITHUB_HEAD_REPO}"
-          BRANCH_NAME="${GITHUB_HEAD_REF}"
+          REPO_URL="https://github.com/${{ github.event.pull_request.head.repo.full_name }}"
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
         else
-          REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
+          REPO_URL="https://github.com/${{ github.repository }}"
           BRANCH_NAME="${GITHUB_REF_NAME}"
         fi
 
-        echo "Using repository: $REPO_URL"
-        echo "Using branch: $BRANCH_NAME"
+        echo "Processing files from repository: $REPO_URL on branch: $BRANCH_NAME"
+
 
         for file in $(echo "$MATCHING_FILES_STRING" | tr ',' '\n'); do
           echo "Processing file: $file"
