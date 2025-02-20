@@ -363,6 +363,6 @@ runs:
           -d '{
                 "title": "Auto-generated PR for branch '${{ inputs.branch_name }}'",
                 "head": "'${{ env.BRANCH_NAME }}'",
-                "base": "main",
+                "base": "${{ inputs.target_branch }}",
                 "body": "This pull request was created automatically by GitHub Actions to merge the changes from '${{ inputs.branch_name }}' into the main branch."
               }'
