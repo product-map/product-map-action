@@ -53,6 +53,7 @@ The following inputs must be provided for the action to function correctly withi
 | `github_token`  | ✅ Yes  | The GitHub token to access the repository. |
 | `expected_files` | ✅ Yes  | A list of file paths that the action should monitor and process when modified. |
 | `user_email`    | ✅ Yes | The email address associated with your **ProductMap** account, used to link the files to your profile. |
+| `user_email`    | ✅ Yes | The target branch to send the pull request. |
 
 
 Below is an example of how to use the action in your workflow file:
@@ -66,6 +67,7 @@ steps:
       github_token: ${{ secrets.GITHUB_TOKEN }}
       expected_files: ("<your-file-path>", "<another/file-path>")
       user_email: <your@email.com>
+      target_branch: <target_branch_name>
 ...
 ```
 
