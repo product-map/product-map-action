@@ -47,6 +47,18 @@ runs:
           echo "This is a public repository."
         fi
 
+    - name: Check if PR is from a fork
+      id: check_fork
+      shell: bash
+      run: |
+        if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+          echo "This PR is coming from a fork. Skipping branch push and PR creation."
+          echo "IS_FORK=true" >> $GITHUB_ENV
+        else
+          echo "This PR is from the main repository"
+          echo "IS_FORK=false" >> $GITHUB_ENV
+        fi
+
     - name: Get GitHub User Info
       id: user-info
       shell: bash
@@ -234,7 +246,7 @@ runs:
 
     - name: Ensure README.md exists
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         # Check if README.md exists, if not, create it with a title
         if [ ! -f README.md ]; then
@@ -243,7 +255,7 @@ runs:
 
     - name: Append URL responses in table format with ProductMap Icon
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         echo "Appending responses to README.md"
 
@@ -304,21 +316,21 @@ runs:
 
     - name: Run script to modify README.md
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         echo "Adding timestamp to README.md"
         echo "\n\n Last updated on $(date)" >> README.md
 
     - name: Set up Git
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
 
     - name: Generate dynamic branch name
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       id: generate_branch_name
       run: |
         # Generate branch name based on timestamp
@@ -328,32 +340,32 @@ runs:
 
     - name: Create a new branch
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         git checkout -b ${{ env.BRANCH_NAME }}  # Use the dynamically generated branch name
 
     - name: Make changes to the repository
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         echo "This is a new file created in the new branch" > newfile.txt
         git add README.md
 
     - name: Commit changes
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         git commit -m "ProductMap analysis result" || echo "No changes to commit"
 
     - name: Push the new branch and commit
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         git push --set-upstream origin ${{ env.BRANCH_NAME }}  # Push to the newly created branch and set upstream
 
     - name: Create a pull request
       shell: bash
-      if: env.MATCHING_FILES_STRING != ''
+      if: env.MATCHING_FILES_STRING != '' && env.IS_FORK == 'false'
       run: |
         # Create the PR using the GitHub API
         curl -X POST \
