@@ -61,8 +61,8 @@ Below is an example of how to use the action in your workflow file:
 ...
 steps:
   - name: ProductMap Map Generation
-    # uses: JuanQuGo/product-map-action@latest
-    uses: JuanQuGo/product-map-action@<latest-version>
+    # uses: product-map/product-map-action@main
+    uses: product-map/product-map-action@<latest-version>
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
       expected_files: ("<your-file-path>", "<another/file-path>")
