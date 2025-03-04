@@ -65,7 +65,7 @@ runs:
       run: |
         # Fetch user info from the GitHub API
         {
-          curl -s -H "Authorization: Bearer ${{ inputs.github_token }}" \
+          curl -s -H "Authorization: token ${{ inputs.github_token }}" \
             https://api.github.com/users/${GITHUB_ACTOR} > user.json
           
           # Check if the API request was successful
