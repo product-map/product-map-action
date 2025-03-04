@@ -65,19 +65,22 @@ runs:
       run: |
         # Fetch user info from the GitHub API
         {
-          HTTP_STATUS=$(curl -s -H "Authorization: token ${{ inputs.github_token }}" \
+          USER_JSON=$(curl -s -H "Authorization: token ${{ inputs.github_token }}" \
+            -w "%{http_code}" \
             https://api.github.com/users/${GITHUB_ACTOR})
 
+          # Extract HTTP status code (last 3 digits of USER_JSON)
+          HTTP_STATUS="${USER_JSON: -3}"
+          USER_JSON="${USER_JSON::-3}"  # Remove last 3 digits (HTTP code) to keep only JSON
+
+          
           # Check if the API request was successful
           if [ "$HTTP_STATUS" -ne 200 ]; then
             echo "Failed to fetch user info. HTTP Status: $HTTP_STATUS"
-            cat user.json  # Show response for debugging
+            echo "API Response: $USER_JSON"
           else
            echo "User info fetched successfully"
           fi
-
-          # Read JSON response
-          USER_JSON=$(cat user.json)
           
           # Verify that the response is valid JSON
           if ! echo "$USER_JSON" | jq empty > /dev/null 2>&1; then
@@ -86,9 +89,9 @@ runs:
             exit 1
           fi
         
-          # Extract username and email from API response
-          NICKNAME=$(jq -r '.login' user.json)
-          PUBLIC_EMAIL=$(jq -r '.email' user.json)
+          # Extract username and email from API response stored in USER_JSON
+          NICKNAME=$(echo "$USER_JSON" | jq -r '.login')
+          PUBLIC_EMAIL=$(echo "$USER_JSON" | jq -r '.email')
         
           # Assign a default nickname if empty
           if [ -z "$NICKNAME" ] || [ "$NICKNAME" == "null" ]; then
