@@ -65,15 +65,19 @@ runs:
       run: |
         # Fetch user info from the GitHub API
         {
-          curl -s -H "Authorization: token ${{ inputs.github_token }}" \
-            https://api.github.com/users/${GITHUB_ACTOR} > user.json
-          
+          HTTP_STATUS=$(curl -s -H "Authorization: token ${{ inputs.github_token }}" \
+            https://api.github.com/users/${GITHUB_ACTOR})
+
           # Check if the API request was successful
-          if [ $? -ne 0 ]; then
-            echo "Failed to fetch user info from GitHub API"
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Failed to fetch user info. HTTP Status: $HTTP_STATUS"
+            cat user.json  # Show response for debugging
           else
-            echo "User info fetched successfully"
+           echo "User info fetched successfully"
           fi
+
+          # Read JSON response
+          USER_JSON=$(cat user.json)
           
           # Verify that the response is valid JSON
           if ! echo "$USER_JSON" | jq empty > /dev/null 2>&1; then
