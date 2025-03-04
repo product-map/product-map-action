@@ -64,15 +64,43 @@ runs:
       shell: bash
       run: |
         # Fetch user info from the GitHub API
-        curl -s -H "Authorization: Bearer ${{ inputs.github_token }}" \
-          https://api.github.com/users/${GITHUB_ACTOR} > user.json
-
-        # Extract username and email from API response
-        NICKNAME=$(jq -r '.login' user.json)
-        PUBLIC_EMAIL=$(jq -r '.email' user.json)
-
+        {
+          curl -s -H "Authorization: Bearer ${{ inputs.github_token }}" \
+            https://api.github.com/users/${GITHUB_ACTOR} > user.json
+          
+          # Check if the API request was successful
+          if [ $? -ne 0 ]; then
+            echo "Failed to fetch user info from GitHub API"
+          else
+            echo "User info fetched successfully"
+          fi
+          
+          # Verify that the response is valid JSON
+          if ! echo "$USER_JSON" | jq empty > /dev/null 2>&1; then
+            echo "Error: Invalid JSON response from GitHub API"
+            echo "Response received: $USER_JSON"
+            exit 1
+          fi
+        
+          # Extract username and email from API response
+          NICKNAME=$(jq -r '.login' user.json)
+          PUBLIC_EMAIL=$(jq -r '.email' user.json)
+        
+          # Assign a default nickname if empty
+          if [ -z "$NICKNAME" ] || [ "$NICKNAME" == "null" ]; then
+            NICKNAME="public-user"
+          fi
+        
+        } || {
+          echo "Failed to fetch user info from GitHub API"
+          echo "Using default email and username"
+          NICKNAME="null"
+          PUBLIC_EMAIL="null"
+        }
+  
         # Handle if the email is null (public email not set)
         if [ "$PUBLIC_EMAIL" == "null" ]; then
+          echo "No public email available from GitHub API"
           PUBLIC_EMAIL="No public email available"
         fi
 
@@ -81,10 +109,22 @@ runs:
           PUBLIC_EMAIL="${{ inputs.user_email }}"
         fi
 
-        # If email is still not available, check the most recent commit email
+        # Check if email is available from the most recent commit
         if [ "$PUBLIC_EMAIL" == "No public email available" ]; then
+          echo "Trying to get email from the most recent commit"
           COMMIT_EMAIL=$(git log -1 --pretty=format:'%ae')
           PUBLIC_EMAIL=$COMMIT_EMAIL
+        fi
+        
+        # Print the obtained email for debugging
+        echo "Final email: $PUBLIC_EMAIL"
+        echo "Final nickname: $NICKNAME"
+        
+        # Evaluate if the email is still not available
+        if [ "$PUBLIC_EMAIL" == "No public email available" ]; then
+          echo "No public email available"
+          PUBLIC_EMAIL="null"
+          NICKNAME="null"
         fi
         
         # Save to environment variables
